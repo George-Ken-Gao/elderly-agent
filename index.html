@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="温和陪伴、日常提醒与健康知识检索的家庭养老 AI 守护演示"
+    />
+    <title>安心陪伴 · 家庭养老 AI 守护</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="config.js"></script>
+    <script src="knowledge.js"></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="安心陪伴首页">
+          <span class="brand-mark" aria-hidden="true">安</span>
+          <span>
+            <strong>安心陪伴</strong>
+            <span class="brand-caption">家庭养老 AI 守护 · 演示版</span>
+          </span>
+        </a>
+        <form id="api-key-form" class="api-key-form">
+          <label class="sr-only" for="api-key">Gemini API Key</label>
+          <div class="api-key-controls">
+            <input
+              id="api-key"
+              name="api-key"
+              type="password"
+              placeholder="输入您自己的 Gemini API Key"
+              autocomplete="new-password"
+              spellcheck="false"
+              required
+            />
+            <button id="save-api-key" class="primary-button" type="submit">保存</button>
+          </div>
+          <p id="key-status" class="key-status" role="status" aria-live="polite">
+            访客 Key 仅保存在当前浏览器；未填写时使用 config.js 中的 Key。
+          </p>
+        </form>
+        <div class="topbar-actions">
+          <span class="connection"><span></span> Gemini Agent</span>
+          <button id="settings-button" class="secondary-button" type="button">设置我的信息</button>
+          <button id="simulate-button" class="secondary-button" type="button">模拟异常</button>
+          <button id="clear-chat" class="secondary-button" type="button">清空对话</button>
+        </div>
+      </header>
+
+      <section class="intro">
+        <p class="eyebrow">温暖陪伴 · 贴心提醒 · 健康知识</p>
+        <h1 id="welcome-heading">您好，今天想聊些什么？</h1>
+        <p class="subtitle">我会记得您的喜好，陪您聊聊天，也帮您留意今天的提醒。</p>
+        <div class="feature-pills" aria-label="助手能力">
+          <span>每日问候</span><span>吃药与作息提醒</span><span>健康知识</span><span>天气查询</span>
+        </div>
+      </section>
+
+      <section class="chat-card" aria-label="安心陪伴聊天">
+        <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
+        <div id="alert-card" class="alert-card" role="alert" hidden>
+          <div class="alert-icon" aria-hidden="true">!</div>
+          <div class="alert-content">
+            <strong>检测到异常</strong>
+            <p id="alert-description">建议联系您的子女。</p>
+            <p id="alert-contact" class="alert-contact"></p>
+            <div class="alert-actions">
+              <button id="notify-button" class="danger-button" type="button">模拟发送通知</button>
+              <button id="dismiss-alert" class="secondary-button" type="button">知道了</button>
+            </div>
+            <p id="notify-status" class="notify-status" aria-live="polite"></p>
+          </div>
+        </div>
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+        <p id="error" class="error" role="alert" hidden></p>
+
+        <form id="chat-form" class="composer">
+          <label class="sr-only" for="question">输入您想说的话</label>
+          <textarea
+            id="question"
+            name="question"
+            rows="1"
+            placeholder="您可以说说今天的心情，或问我健康、天气和提醒…"
+            autocomplete="off"
+            required
+          ></textarea>
+          <button id="send-button" type="submit"><span>发送</span><span aria-hidden="true">↑</span></button>
+        </form>
+        <p class="composer-hint">按 Enter 发送 · Shift + Enter 换行</p>
+      </section>
+
+      <details class="activity-panel">
+        <summary>
+          <span>Agent 执行过程</span><span id="activity-badge" class="badge">等待聊天</span>
+        </summary>
+        <ol id="activity-log" class="activity-log">
+          <li class="empty-activity">开始聊天后，这里会显示知识检索、提醒和工具调用步骤。</li>
+        </ol>
+      </details>
+
+      <p class="disclaimer">
+        演示版不替代医生诊断或紧急救助。提醒时间、健康资料和天气仅供演示；异常通知不会实际发送短信。
+        纯前端项目中的 API Key 会暴露给浏览器，请勿将真实 Key 发布到公开网站。
+      </p>
+    </main>
+
+    <dialog id="settings-dialog" class="settings-dialog" aria-labelledby="settings-title">
+      <form id="settings-form" class="settings-form">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">您的专属陪伴</p>
+            <h2 id="settings-title">设置我的信息</h2>
+          </div>
+          <button id="close-settings" class="close-button" type="button" aria-label="关闭">×</button>
+        </div>
+        <label for="profile-name">怎么称呼您</label>
+        <input id="profile-name" name="name" maxlength="30" placeholder="例如：王阿姨" />
+        <label for="medicine-morning">早上药物时间</label>
+        <input id="medicine-morning" name="morningTime" type="time" required />
+        <label for="medicine-noon">中午药物时间</label>
+        <input id="medicine-noon" name="noonTime" type="time" required />
+        <label for="medicine-night">晚上药物时间</label>
+        <input id="medicine-night" name="nightTime" type="time" required />
+        <label for="interests">兴趣爱好</label>
+        <input id="interests" name="interests" maxlength="120" placeholder="例如：下棋、听戏、养花" />
+        <label for="profile-city">所在城市（用于天气）</label>
+        <input id="profile-city" name="city" maxlength="50" placeholder="例如：北京" />
+        <label for="child-name">建议联系的子女</label>
+        <input id="child-name" name="childName" maxlength="40" placeholder="例如：女儿小芳" />
+        <p id="settings-status" class="settings-status" role="status" aria-live="polite"></p>
+        <div class="dialog-actions">
+          <button id="cancel-settings" class="secondary-button" type="button">取消</button>
+          <button class="primary-button" type="submit">保存信息</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="simulate-dialog" class="settings-dialog" aria-labelledby="simulate-title">
+      <div class="settings-form">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">演示功能</p>
+            <h2 id="simulate-title">模拟异常情况</h2>
+          </div>
+          <button id="close-simulate" class="close-button" type="button" aria-label="关闭">×</button>
+        </div>
+        <p class="subtitle">选择一个场景，展示页面上的子女通知提醒卡。不会发送真实通知。</p>
+        <div class="simulate-actions">
+          <button id="simulate-fall" class="danger-button" type="button">模拟摔倒</button>
+          <button id="simulate-no-response" class="secondary-button" type="button">模拟长时间未回应</button>
+        </div>
+      </div>
+    </dialog>
+
+  </body>
+</html>
